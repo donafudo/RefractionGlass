@@ -75,6 +75,7 @@
 			fixed4 frag(v2f i) : SV_Target
 			{
 				float3 normal = UnpackNormal(tex2D(_BumpMap ,i.uv));
+				normal = mul(UNITY_MATRIX_V, normal);
 				return float4(i.normal - normal, 1);
 			}
 			ENDCG
@@ -110,14 +111,15 @@
 
 		void surf (Input IN, inout SurfaceOutputStandard o)
 		{
-			float worldNormal = WorldNormalVector(IN, o.Normal);
 			float3 rimdir = pow(1 - saturate(dot(IN.viewDir, o.Normal)),3);
 
 			float2 grabUV = (IN.screenPos.xy / IN.screenPos.w);
 
+			float3 forwardnormal = WorldNormalVector(IN, o.Normal);
+			forwardnormal = mul(UNITY_MATRIX_V, forwardnormal);
 			fixed3 normalmap = UnpackNormal(tex2D(_BumpMap, IN.uv_BumpMap));
 			fixed3 backnormal = tex2D(_GrabTexture, grabUV);
-			fixed3 normal = (worldNormal + backnormal + normalmap);
+			fixed3 normal = (forwardnormal + backnormal + normalmap);
 			
 			grabUV += normal*_Rrefractive;
 
